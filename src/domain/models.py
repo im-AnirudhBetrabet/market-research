@@ -1,0 +1,26 @@
+from dataclasses import dataclass, field
+from datetime    import datetime
+import pandas as pd
+
+@dataclass(frozen=True)
+class MarketBar:
+    timestamp: datetime
+    open     : float
+    high     : float
+    low      : float
+    close    : float
+
+@dataclass
+class ValidationResult:
+    duplicate_count: int
+    null_count     : int
+    row_count      : int
+    passed         : int
+    warnings       : list[str] = field(
+        default_factory=list
+    )
+
+@dataclass(slots=True, frozen=True)
+class MarketDataset:
+    name: str
+    data: pd.DataFrame
