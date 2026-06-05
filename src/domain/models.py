@@ -24,3 +24,11 @@ class ValidationResult:
 class MarketDataset:
     name: str
     data: pd.DataFrame
+
+@dataclass(slots=True, frozen=True)
+class FeatureDataset:
+    data: pd.DataFrame
+
+    @property
+    def row_count(self) -> int:
+        return len(self.data)

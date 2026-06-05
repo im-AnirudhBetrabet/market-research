@@ -8,7 +8,7 @@ from src.pipelines.market_data_pipeline import MarketDataPipeline
 from src.research.dataset_builder       import DatasetBuilder
 from src.validators.ohlc_validator      import OHLCValidator
 
-def main():
+def build_aligned_dataset():
     validator = OHLCValidator()
     print(">> Loading GIFTNIFTY data..")
 
@@ -49,5 +49,5 @@ def main():
     print(f"\n Saved -> {output_file}")
 
 if __name__ == "__main__":
-    main()
+    build_aligned_dataset()
 

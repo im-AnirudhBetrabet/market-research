@@ -11,7 +11,7 @@ def print_result( dataset_name: str, result) -> None:
     print(result)
 
 
-def main():
+def ingest_data():
     validator = OHLCValidator()
 
     gift_pipeline        = MarketDataPipeline(loader=GiftNiftyLoader(), validator=validator)
@@ -32,4 +32,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    ingest_data()
