@@ -32,3 +32,9 @@ class FeatureDataset:
     @property
     def row_count(self) -> int:
         return len(self.data)
+
+@dataclass(slots=True, frozen=True)
+class CorrelationResult:
+    feature    : str
+    target     : str
+    coefficient: float
