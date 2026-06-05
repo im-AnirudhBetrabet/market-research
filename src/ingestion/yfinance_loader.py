@@ -13,18 +13,19 @@ class YahooFinanceLoader:
         if df.empty:
             raise ValueError(f"No data returned for {ticker}")
 
+        if isinstance(df.columns, pd.MultiIndex):
+            df.columns = df.columns.droplevel(1)
+
         df = df.reset_index().rename(
                 columns={
-                    "Date": "date",
-                    "Open": "open",
-                    "High": "high",
-                    "Low": "low",
+                    "Date" : "date",
+                    "Open" : "open",
+                    "High" : "high",
+                    "Low"  : "low",
                     "Close": "close",
                 }
             )
 
 
-        if isinstance(df.columns, pd.MultiIndex):
-            df.columns = df.columns.droplevel(1)
 
-        return df[["date", "open", "high", "low", "close"]]
+        return df[["date", "open", "high", "low", "close"]].sort_values(by='date').reset_index(drop=True)
