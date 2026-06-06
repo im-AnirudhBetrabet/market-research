@@ -7,8 +7,10 @@ class FeatureBuilder:
         df = aligned_dataset.data.copy()
 
         ## Feature
-        df["gift_return"] = df["gift_close"].pct_change()
-
+        df["gift_return"]       = df["gift_close"].pct_change()
+        df['gift_return_lag1']  = df['gift_return'].shift(1)
+        df['gift_return_lag2']  = df['gift_return'].shift(2)
+        df['gift_return_lead1'] = df['gift_return'].shift(-1)
 
         # Target
         df["nifty_previous_close"] = df["nifty_close"].shift(1)
@@ -18,7 +20,12 @@ class FeatureBuilder:
 
         df = df.dropna().reset_index(drop=True)
 
-        feature_df = df[['date', 'gift_return', 'nifty_gap', 'sensex_gap']]
+        feature_df = df[[
+            'date',
+            'gift_return', 'gift_return_lag1', 'gift_return_lag2', 'gift_return_lead1',
+            'nifty_gap',
+            'sensex_gap'
+        ]]
 
         return FeatureDataset(
             data=feature_df

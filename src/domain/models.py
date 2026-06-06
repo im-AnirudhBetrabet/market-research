@@ -70,3 +70,9 @@ class ResearchReport:
 
     nifty_buckets : list[BucketAnalysisResult]
     sensex_buckets: list[BucketAnalysisResult]
+
+@dataclass(slots=True, frozen=True)
+class LagAnalysisResult:
+    feature    : str
+    target     : str
+    coefficient: float

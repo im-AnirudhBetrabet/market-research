@@ -2,6 +2,7 @@ from pathlib import Path
 
 from src.analytics.directional_analysis_engine import DirectionalAnalysisEngine
 from src.analytics.correlation_engine          import CorrelationEngine
+from src.analytics.lag_analysis_engine         import LagAnalysisEngine
 from src.features.feature_builder              import FeatureBuilder
 from src.ingestion.csv_market_loader           import CsvMarketLoader
 from src.ingestion.gift_nifty_loader           import GiftNiftyLoader
@@ -61,6 +62,14 @@ def run_correlation_analysis():
     nifty_bucket_result  = bucket_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap")
     sensex_bucket_result = bucket_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap")
 
+    lag_engine = LagAnalysisEngine()
+
+    lag_results = [
+        lag_engine.calculate(feature_dataset, "gift_return", "nifty_gap"),
+        lag_engine.calculate(feature_dataset, "gift_return_lag1", "nifty_gap"),
+        lag_engine.calculate(feature_dataset,"gift_return_lag2","nifty_gap"),
+        lag_engine.calculate(feature_dataset,"gift_return_lead1","nifty_gap")
+    ]
     print("\nCorrelation Analysis")
     print("-" * 60)
     print(
@@ -113,49 +122,59 @@ def run_correlation_analysis():
             f"{result.accuracy:.2%}"
         )
 
-        chart_builder.build_scatter_plot(
-            dataset=feature_dataset,
-            target="nifty_gap",
-            output_path=Path("charts/nifty_scatter.png")
-        )
-        chart_builder.build_scatter_plot(
-            dataset=feature_dataset,
-            target="sensex_gap",
-                output_path=Path("charts/sensex_scatter.png")
-        )
+    print("\nLag Analysis")
+    print("-" * 60)
 
-        chart_builder.build_bucket_chart(
-            results=nifty_bucket_result,
-            title=(
-                "Gift Return vs "
-                "Nifty Gap Accuracy"
-            ),
-            output_path=Path(
-                "charts/nifty_bucket_accuracy.png"
-            ),
+    for result in lag_results:
+        print(
+            f"{result.feature:<20}"
+            f" -> "
+            f"{result.target:<15}"
+            f": {result.coefficient:.6f}"
         )
+    chart_builder.build_scatter_plot(
+        dataset=feature_dataset,
+        target="nifty_gap",
+        output_path=Path("charts/nifty_scatter.png")
+    )
+    chart_builder.build_scatter_plot(
+        dataset=feature_dataset,
+        target="sensex_gap",
+            output_path=Path("charts/sensex_scatter.png")
+    )
 
-        chart_builder.build_bucket_chart(
-            results=sensex_bucket_result,
-            title=(
-                "Gift Return vs "
-                "Sensex Gap Accuracy"
-            ),
-            output_path=Path(
-                "charts/sensex_bucket_accuracy.png"
-            ),
-        )
+    chart_builder.build_bucket_chart(
+        results=nifty_bucket_result,
+        title=(
+            "Gift Return vs "
+            "Nifty Gap Accuracy"
+        ),
+        output_path=Path(
+            "charts/nifty_bucket_accuracy.png"
+        ),
+    )
 
-        report = ResearchReport(
-            nifty_correlation=nifty_result,
-            sensex_correlation=sensex_result,
+    chart_builder.build_bucket_chart(
+        results=sensex_bucket_result,
+        title=(
+            "Gift Return vs "
+            "Sensex Gap Accuracy"
+        ),
+        output_path=Path(
+            "charts/sensex_bucket_accuracy.png"
+        ),
+    )
 
-            nifty_directional=nifty_direction_result,
-            sensex_directional=sensex_direction_result,
+    report = ResearchReport(
+        nifty_correlation=nifty_result,
+        sensex_correlation=sensex_result,
 
-            nifty_buckets=nifty_bucket_result,
-            sensex_buckets=sensex_bucket_result,
-        )
+        nifty_directional=nifty_direction_result,
+        sensex_directional=sensex_direction_result,
+
+        nifty_buckets=nifty_bucket_result,
+        sensex_buckets=sensex_bucket_result,
+    )
 
     MarkdownReportBuilder().build(
         report=report,
