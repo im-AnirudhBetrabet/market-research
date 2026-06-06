@@ -38,3 +38,13 @@ class CorrelationResult:
     feature    : str
     target     : str
     coefficient: float
+
+@dataclass(slots=True, frozen=True)
+class DirectionalAnalysisResult:
+    feature: str
+    target : str
+
+    total_observations : int
+    matching_directions: int
+
+    accuracy: float

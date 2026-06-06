@@ -1,12 +1,13 @@
 from pathlib import Path
 
-from src.analytics.correlation_engine   import CorrelationEngine
-from src.features.feature_builder       import FeatureBuilder
-from src.ingestion.csv_market_loader    import CsvMarketLoader
-from src.ingestion.gift_nifty_loader    import GiftNiftyLoader
-from src.pipelines.market_data_pipeline import MarketDataPipeline
-from src.research.dataset_builder       import DatasetBuilder
-from src.validators.ohlc_validator      import OHLCValidator
+from scripts.directional_analysis_engine import DirectionalAnalysisEngine
+from src.analytics.correlation_engine    import CorrelationEngine
+from src.features.feature_builder        import FeatureBuilder
+from src.ingestion.csv_market_loader     import CsvMarketLoader
+from src.ingestion.gift_nifty_loader     import GiftNiftyLoader
+from src.pipelines.market_data_pipeline  import MarketDataPipeline
+from src.research.dataset_builder        import DatasetBuilder
+from src.validators.ohlc_validator       import OHLCValidator
 
 def run_correlation_analysis():
     validator = OHLCValidator()
@@ -38,9 +39,13 @@ def run_correlation_analysis():
 
     feature_dataset = FeatureBuilder().build(aligned_dataset)
 
-    engine       = CorrelationEngine()
-    nifty_result  = engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap")
-    sensex_result = engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap")
+    correlation_engine = CorrelationEngine()
+    nifty_result       = correlation_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap")
+    sensex_result      = correlation_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap")
+
+    direction_analysis_engine = DirectionalAnalysisEngine()
+    nifty_direction_result    = direction_analysis_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap")
+    sensex_direction_result   = direction_analysis_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap")
 
     print("\nCorrelation Analysis")
     print("-" * 60)
@@ -55,6 +60,20 @@ def run_correlation_analysis():
         f"{sensex_result.target}: "
         f"{sensex_result.coefficient:.6f}"
     )
+
+    print("\nDirectional Analysis")
+    print("-" * 60)
+    print(f"{nifty_direction_result.feature} -> {nifty_direction_result.target}"
+        f"\nAccuracy           : {nifty_direction_result.accuracy:.6f}"
+        f"\nMatching directions: {nifty_direction_result.matching_directions}"
+        f"\nTotal observations : {nifty_direction_result.total_observations}"
+    )
+
+    print(f"{sensex_direction_result.feature} -> {sensex_direction_result.target}"
+          f"\nAccuracy           : {sensex_direction_result.accuracy:.6f}"
+          f"\nMatching directions: {sensex_direction_result.matching_directions}"
+          f"\nTotal observations : {sensex_direction_result.total_observations}"
+          )
 
 
 if __name__ == "__main__":
