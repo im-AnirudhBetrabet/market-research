@@ -48,3 +48,13 @@ class DirectionalAnalysisResult:
     matching_directions: int
 
     accuracy: float
+
+@dataclass(slots=True, frozen=True)
+class BucketAnalysisResult:
+    bucket_name: str
+    lower_bound: float
+    upper_bound: float
+
+    observations       : int
+    matching_directions: int
+    accuracy           : float

@@ -1,13 +1,15 @@
 from pathlib import Path
 
-from scripts.directional_analysis_engine import DirectionalAnalysisEngine
-from src.analytics.correlation_engine    import CorrelationEngine
-from src.features.feature_builder        import FeatureBuilder
-from src.ingestion.csv_market_loader     import CsvMarketLoader
-from src.ingestion.gift_nifty_loader     import GiftNiftyLoader
-from src.pipelines.market_data_pipeline  import MarketDataPipeline
-from src.research.dataset_builder        import DatasetBuilder
-from src.validators.ohlc_validator       import OHLCValidator
+from src.analytics.directional_analysis_engine import DirectionalAnalysisEngine
+from src.analytics.correlation_engine          import CorrelationEngine
+from src.features.feature_builder              import FeatureBuilder
+from src.ingestion.csv_market_loader           import CsvMarketLoader
+from src.ingestion.gift_nifty_loader           import GiftNiftyLoader
+from src.pipelines.market_data_pipeline        import MarketDataPipeline
+from src.research.dataset_builder              import DatasetBuilder
+from src.validators.ohlc_validator             import OHLCValidator
+from src.analytics.bucket_analysis_engine      import BucketAnalysisEngine
+
 
 def run_correlation_analysis():
     validator = OHLCValidator()
@@ -47,6 +49,11 @@ def run_correlation_analysis():
     nifty_direction_result    = direction_analysis_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap")
     sensex_direction_result   = direction_analysis_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap")
 
+    bucket_engine = BucketAnalysisEngine(buckets=[0.0, 0.002, 0.005, 0.010, 0.015, 0.020, 0.030, float("inf")])
+
+    nifty_bucket_result  = bucket_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap")
+    sensex_bucket_result = bucket_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap")
+
     print("\nCorrelation Analysis")
     print("-" * 60)
     print(
@@ -75,6 +82,29 @@ def run_correlation_analysis():
           f"\nTotal observations : {sensex_direction_result.total_observations}"
           )
 
+    print("\nBucket Analysis (Gift Return -> Nifty Gap)")
+    print("-"*60)
+
+    for result in nifty_bucket_result:
+        print(
+            f"{result.bucket_name:<20}"
+            f" Observations: "
+            f"{result.observations:<5}"
+            f" Accuracy: "
+            f"{result.accuracy:.2%}"
+        )
+
+    print("\nBucket Analysis (Gift Return -> Sensex Gap)")
+    print("-" * 60)
+
+    for result in sensex_bucket_result:
+        print(
+            f"{result.bucket_name:<20}"
+            f" Observations: "
+            f"{result.observations:<5}"
+            f" Accuracy: "
+            f"{result.accuracy:.2%}"
+        )
 
 if __name__ == "__main__":
     run_correlation_analysis()
