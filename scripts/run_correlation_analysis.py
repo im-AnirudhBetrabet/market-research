@@ -9,10 +9,15 @@ from src.pipelines.market_data_pipeline        import MarketDataPipeline
 from src.research.dataset_builder              import DatasetBuilder
 from src.validators.ohlc_validator             import OHLCValidator
 from src.analytics.bucket_analysis_engine      import BucketAnalysisEngine
-
+from src.visualization.chart_builder           import ChartBuilder
 
 def run_correlation_analysis():
     validator = OHLCValidator()
+
+
+    charts_dir    = Path("charts")
+    charts_dir.mkdir(parents=True, exist_ok=True)
+    chart_builder = ChartBuilder()
 
     gift_pipeline = MarketDataPipeline(loader=GiftNiftyLoader(), validator=validator)
     csv_pipeline  = MarketDataPipeline(loader=CsvMarketLoader(), validator=validator)
@@ -104,6 +109,39 @@ def run_correlation_analysis():
             f"{result.observations:<5}"
             f" Accuracy: "
             f"{result.accuracy:.2%}"
+        )
+
+        chart_builder.build_scatter_plot(
+            dataset=feature_dataset,
+            target="nifty_gap",
+            output_path=Path("charts/nifty_scatter.png")
+        )
+        chart_builder.build_scatter_plot(
+            dataset=feature_dataset,
+            target="sensex_gap",
+                output_path=Path("charts/sensex_scatter.png")
+        )
+
+        chart_builder.build_bucket_chart(
+            results=nifty_bucket_result,
+            title=(
+                "Gift Return vs "
+                "Nifty Gap Accuracy"
+            ),
+            output_path=Path(
+                "charts/nifty_bucket_accuracy.png"
+            ),
+        )
+
+        chart_builder.build_bucket_chart(
+            results=sensex_bucket_result,
+            title=(
+                "Gift Return vs "
+                "Sensex Gap Accuracy"
+            ),
+            output_path=Path(
+                "charts/sensex_bucket_accuracy.png"
+            ),
         )
 
 if __name__ == "__main__":
