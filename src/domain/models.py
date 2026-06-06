@@ -26,7 +26,7 @@ class MarketDataset:
     data: pd.DataFrame
 
 @dataclass(slots=True, frozen=True)
-class FeatureDataset:
+class   FeatureDataset:
     data: pd.DataFrame
 
     @property
@@ -58,3 +58,15 @@ class BucketAnalysisResult:
     observations       : int
     matching_directions: int
     accuracy           : float
+
+
+@dataclass(slots=True, frozen=True)
+class ResearchReport:
+    nifty_correlation : CorrelationResult
+    sensex_correlation: CorrelationResult
+
+    nifty_directional : DirectionalAnalysisResult
+    sensex_directional: DirectionalAnalysisResult
+
+    nifty_buckets : list[BucketAnalysisResult]
+    sensex_buckets: list[BucketAnalysisResult]

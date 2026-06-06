@@ -10,6 +10,8 @@ from src.research.dataset_builder              import DatasetBuilder
 from src.validators.ohlc_validator             import OHLCValidator
 from src.analytics.bucket_analysis_engine      import BucketAnalysisEngine
 from src.visualization.chart_builder           import ChartBuilder
+from src.reporting.markdown_report_builder     import MarkdownReportBuilder
+from src.domain.models                         import ResearchReport
 
 def run_correlation_analysis():
     validator = OHLCValidator()
@@ -144,5 +146,22 @@ def run_correlation_analysis():
             ),
         )
 
+        report = ResearchReport(
+            nifty_correlation=nifty_result,
+            sensex_correlation=sensex_result,
+
+            nifty_directional=nifty_direction_result,
+            sensex_directional=sensex_direction_result,
+
+            nifty_buckets=nifty_bucket_result,
+            sensex_buckets=sensex_bucket_result,
+        )
+
+    MarkdownReportBuilder().build(
+        report=report,
+        output_file=Path(
+            "reports/gift_nifty_analysis.md"
+        ),
+    )
 if __name__ == "__main__":
     run_correlation_analysis()
