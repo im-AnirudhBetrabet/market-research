@@ -96,6 +96,20 @@ class FactorRanking:
     sensex_accuracy: float
 
 @dataclass(slots=True, frozen=True)
+class FactorCorrelationResult:
+    matrix: pd.DataFrame
+
+@dataclass(slots=True, frozen=True)
+class CompositeSignalResult:
+    signal_name : str
+    observations: int
+    accuracy    : float
+    coverage    : float
+    matching_directions: int
+
+
+
+@dataclass(slots=True, frozen=True)
 class ResearchReport:
     analysis_timestamp: datetime
     observation_count : int
@@ -106,7 +120,4 @@ class ResearchReport:
     rankings: list[FactorRanking]
 
     factor_correlation_matrix: pd.DataFrame
-
-@dataclass(slots=True, frozen=True)
-class FactorCorrelationResult:
-    matrix: pd.DataFrame
+    composite_signals: list[CompositeSignalResult]

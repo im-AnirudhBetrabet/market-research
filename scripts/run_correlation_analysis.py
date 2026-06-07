@@ -4,7 +4,7 @@ from pathlib import Path
 from src.analytics.directional_analysis_engine import DirectionalAnalysisEngine
 from src.analytics.correlation_engine          import CorrelationEngine
 from src.analytics.lag_analysis_engine         import LagAnalysisEngine
-from src.analytics.factor_correlation_engine import FactorCorrelationResult, FactorCorrelationEngine
+from src.analytics.factor_correlation_engine   import FactorCorrelationEngine
 from src.features.feature_builder              import FeatureBuilder
 from src.ingestion.csv_market_loader           import CsvMarketLoader
 from src.ingestion.gift_nifty_loader           import GiftNiftyLoader
@@ -17,6 +17,7 @@ from src.reporting.markdown_report_builder     import MarkdownReportBuilder
 from src.reporting.factor_ranking_builder      import FactorRankingBuilder
 from src.domain.models                         import ResearchReport, FactorSummary
 from src.domain.enums                          import RelationshipTypes
+from src.analytics.composite_signal_engine     import CompositeSignalEngine
 
 def run_correlation_analysis():
     validator = OHLCValidator()
@@ -151,6 +152,16 @@ def run_correlation_analysis():
     factor_correlation_engine = FactorCorrelationEngine()
     factor_correlation        = factor_correlation_engine.calculate(dataset=feature_dataset, features=["gift_return", "vix_return", 'sp500_return'])
     ## ====== Factor correlation analysis ends ======
+
+    ## ====== Composite signal analysis starts ======
+    composite_signal_engine = CompositeSignalEngine()
+
+    gift_sp500_bullish = composite_signal_engine.calculate(dataset=feature_dataset, signal_name="Gift Up + SP500 Up"             , condition=lambda df: ((df['gift_return'] > 0) & (df['sp500_return'] > 0))                         , target_column="nifty_gap", expected_direction=True)
+    gift_sp500_bearish = composite_signal_engine.calculate(dataset=feature_dataset, signal_name="Gift Down + SP500 Down"         , condition=lambda df: ((df['gift_return'] < 0) & (df['sp500_return'] < 0))                         , target_column="nifty_gap", expected_direction=False)
+    full_bullish       = composite_signal_engine.calculate(dataset=feature_dataset, signal_name="Gift Up + SP500 Up + VIX Down"  , condition=lambda df: ((df['gift_return'] > 0) & (df['sp500_return'] > 0) & (df['vix_return'] < 0)), target_column="nifty_gap", expected_direction=True)
+    full_bearish       = composite_signal_engine.calculate(dataset=feature_dataset, signal_name="Gift Down + SP500 Down + VIX UP", condition=lambda df: ((df['gift_return'] < 0) & (df['sp500_return'] < 0) & (df['vix_return'] > 0)), target_column="nifty_gap", expected_direction=False)
+
+    ## ====== Composite signal analysis ends   ======
 
     ## ====== Results display starts ======
     print("\n")
@@ -358,6 +369,34 @@ def run_correlation_analysis():
             f"{result.target:<15}"
             f": {result.coefficient:.6f}"
         )
+
+    print()
+    print("Composite Signal Analysis")
+    print("-"*60)
+
+    for result in [gift_sp500_bullish, gift_sp500_bearish, full_bullish, full_bearish]:
+        print(result.signal_name)
+        print(
+            f"Accuracy           : "
+            f"{result.accuracy:.6f}"
+        )
+
+        print(
+            f"Coverage           : "
+            f"{result.coverage:.2%}"
+        )
+
+        print(
+            f"Matching directions: "
+            f"{result.matching_directions}"
+        )
+
+        print(
+            f"Observations       : "
+            f"{result.observations}"
+        )
+
+        print()
     ## ====== Results display ends ======
 
     ## ====== Results visualization starts ======
@@ -610,7 +649,8 @@ def run_correlation_analysis():
             sp_factor
         ],
         rankings=factor_rankings,
-        factor_correlation_matrix=factor_correlation.matrix
+        factor_correlation_matrix=factor_correlation.matrix,
+        composite_signals=[gift_sp500_bullish, gift_sp500_bearish, full_bullish, full_bearish]
     )
 
     chart_builder.build_factor_ranking_chart(
