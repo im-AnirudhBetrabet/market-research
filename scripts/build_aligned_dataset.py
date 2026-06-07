@@ -21,10 +21,14 @@ def build_aligned_dataset():
     print(">> Loading SENSEX data..")
     sensex_df, sensex_result = csv_pipeline.run("data/raw/sensex.csv", "Sensex")
 
+    print(">> Loading INDIAVIX data..")
+    vix_df, vix_result = csv_pipeline.run("data/raw/india_vix.csv", "india_vix")
+
     aligned_dataset = DatasetBuilder().build(
         gift_dataset=gift_df,
         nifty_dataset=nifty_df,
-        sensex_dataset=sensex_df
+        sensex_dataset=sensex_df,
+        vix_dataset=vix_df
     )
 
     df = aligned_dataset.data

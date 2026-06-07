@@ -1,6 +1,5 @@
 from math import inf
-import pandas as pd
-
+from src.domain.enums  import RelationshipTypes
 from src.domain.models import BucketAnalysisResult, FeatureDataset
 
 
@@ -8,7 +7,7 @@ class BucketAnalysisEngine:
     def __init__(self, buckets: list[float] | None = None):
         self._buckets = buckets if buckets is not None else [0.0, 0.02, 0.05, 0.10, inf]
 
-    def calculate(self, dataset: FeatureDataset, feature: str, target: str) -> list[BucketAnalysisResult]:
+    def calculate(self, dataset: FeatureDataset, feature: str, target: str, relationship: RelationshipTypes) -> list[BucketAnalysisResult]:
         df = dataset.data.copy()
 
         df['feature_abs'] = df[feature].abs()
@@ -16,7 +15,10 @@ class BucketAnalysisEngine:
         feature_direction = df[feature] > 0
         target_direction  = df[target]  > 0
 
-        df['direction_match'] = feature_direction == target_direction
+        if relationship ==  RelationshipTypes.POSITIVE:
+            df['direction_match'] = feature_direction == target_direction
+        else:
+            df['direction_match'] = feature_direction != target_direction
 
         results: list[BucketAnalysisResult] = []
         for lower, upper in zip(self._buckets[:-1], self._buckets[1:]):

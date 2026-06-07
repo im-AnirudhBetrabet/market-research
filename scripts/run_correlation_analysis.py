@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 
 from src.analytics.directional_analysis_engine import DirectionalAnalysisEngine
@@ -12,7 +13,8 @@ from src.validators.ohlc_validator             import OHLCValidator
 from src.analytics.bucket_analysis_engine      import BucketAnalysisEngine
 from src.visualization.chart_builder           import ChartBuilder
 from src.reporting.markdown_report_builder     import MarkdownReportBuilder
-from src.domain.models                         import ResearchReport
+from src.domain.models                         import ResearchReport, FactorSummary
+from src.domain.enums                          import RelationshipTypes
 
 def run_correlation_analysis():
     validator = OHLCValidator()
@@ -37,12 +39,16 @@ def run_correlation_analysis():
 
     sensex_dataset, _ = csv_pipeline.run(source=Path("data/raw/sensex.csv"), dataset_name="sensex")
 
+    print(">> Loading VIX data..")
+
+    vix_dataset, _ = csv_pipeline.run(source=Path("data/raw/india_vix.csv"), dataset_name="vix")
     print(">> Building aligned dataset..")
 
     aligned_dataset = DatasetBuilder().build(
             gift_dataset=gift_dataset,
             nifty_dataset=nifty_dataset,
             sensex_dataset=sensex_dataset,
+            vix_dataset=vix_dataset
         )
 
     print(">> Building feature dataset..")
@@ -50,66 +56,112 @@ def run_correlation_analysis():
     feature_dataset = FeatureBuilder().build(aligned_dataset)
 
     correlation_engine = CorrelationEngine()
-    nifty_result       = correlation_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap")
-    sensex_result      = correlation_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap")
+    nifty_gift_correlation  = correlation_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap" )
+    sensex_gift_correlation = correlation_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap")
+
+    nifty_vix_correlation  = correlation_engine.calculate(dataset=feature_dataset, feature="vix_return", target="nifty_gap" )
+    sensex_vix_correlation = correlation_engine.calculate(dataset=feature_dataset, feature="vix_return", target="sensex_gap")
 
     direction_analysis_engine = DirectionalAnalysisEngine()
-    nifty_direction_result    = direction_analysis_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap")
-    sensex_direction_result   = direction_analysis_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap")
+    nifty_gift_direction_result  = direction_analysis_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap" , relationship=RelationshipTypes.POSITIVE)
+    sensex_gift_direction_result = direction_analysis_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap", relationship=RelationshipTypes.POSITIVE)
+
+    nifty_vix_direction_result  = direction_analysis_engine.calculate(dataset=feature_dataset, feature="vix_return", target="nifty_gap" , relationship=RelationshipTypes.NEGATIVE)
+    sensex_vix_direction_result = direction_analysis_engine.calculate(dataset=feature_dataset, feature="vix_return", target="sensex_gap", relationship=RelationshipTypes.NEGATIVE)
 
     bucket_engine = BucketAnalysisEngine(buckets=[0.0, 0.002, 0.005, 0.010, 0.015, 0.020, 0.030, float("inf")])
 
-    nifty_bucket_result  = bucket_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap")
-    sensex_bucket_result = bucket_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap")
-
+    nifty_gift_bucket_result  = bucket_engine.calculate(dataset=feature_dataset, feature="gift_return", target="nifty_gap" , relationship=RelationshipTypes.POSITIVE)
+    sensex_gift_bucket_result = bucket_engine.calculate(dataset=feature_dataset, feature="gift_return", target="sensex_gap", relationship=RelationshipTypes.POSITIVE)
+    nifty_vix_bucket_result   = bucket_engine.calculate(dataset=feature_dataset, feature="vix_return" , target="nifty_gap" , relationship=RelationshipTypes.NEGATIVE)
+    sensex_vix_bucket_result  = bucket_engine.calculate(dataset=feature_dataset, feature="vix_return" , target="sensex_gap", relationship=RelationshipTypes.NEGATIVE)
     lag_engine = LagAnalysisEngine()
 
-    nifty_lag_results = [
-        lag_engine.calculate(feature_dataset,"gift_return"     ,"nifty_gap"),
-        lag_engine.calculate(feature_dataset,"gift_return_lag1","nifty_gap"),
+    nifty_gift_lag_result = [
+        lag_engine.calculate(feature_dataset,"gift_return"      ,"nifty_gap"),
+        lag_engine.calculate(feature_dataset,"gift_return_lag1" ,"nifty_gap"),
         lag_engine.calculate(feature_dataset,"gift_return_lag2" ,"nifty_gap"),
         lag_engine.calculate(feature_dataset,"gift_return_lead1","nifty_gap")
     ]
 
-    sensex_lag_results = [
+    sensex_gift_lag_result = [
         lag_engine.calculate(feature_dataset, "gift_return"      , "sensex_gap"),
         lag_engine.calculate(feature_dataset, "gift_return_lag1" , "sensex_gap"),
         lag_engine.calculate(feature_dataset, "gift_return_lag2" , "sensex_gap"),
         lag_engine.calculate(feature_dataset, "gift_return_lead1", "sensex_gap")
     ]
 
+    nifty_vix_lag_result = [
+        lag_engine.calculate(feature_dataset, "vix_return"      , "nifty_gap"),
+        lag_engine.calculate(feature_dataset, "vix_return_lag1" , "nifty_gap"),
+        lag_engine.calculate(feature_dataset, "vix_return_lag2" , "nifty_gap"),
+        lag_engine.calculate(feature_dataset, "vix_return_lead1", "nifty_gap")
+    ]
+
+    sensex_vix_lag_result = [
+        lag_engine.calculate(feature_dataset, "vix_return"      , "sensex_gap"),
+        lag_engine.calculate(feature_dataset, "vix_return_lag1" , "sensex_gap"),
+        lag_engine.calculate(feature_dataset, "vix_return_lag2" , "sensex_gap"),
+        lag_engine.calculate(feature_dataset, "vix_return_lead1", "sensex_gap")
+    ]
+
     print("\nCorrelation Analysis")
     print("-" * 60)
     print(
-        f"{nifty_result.feature} -> "
-        f"{nifty_result.target}: "
-        f"{nifty_result.coefficient:.6f}"
+        f"{nifty_gift_correlation.feature} -> "
+        f"{nifty_gift_correlation.target}: "
+        f"{nifty_gift_correlation.coefficient:.6f}"
     )
 
     print(
-        f"{sensex_result.feature} -> "
-        f"{sensex_result.target}: "
-        f"{sensex_result.coefficient:.6f}"
+        f"{sensex_gift_correlation.feature} -> "
+        f"{sensex_gift_correlation.target}: "
+        f"{sensex_gift_correlation.coefficient:.6f}"
+    )
+
+    print(
+        f"{nifty_vix_correlation.feature} -> "
+        f"{nifty_vix_correlation.target}: "
+        f"{nifty_vix_correlation.coefficient:.6f}"
+    )
+
+    print(
+        f"{sensex_vix_correlation.feature} -> "
+        f"{sensex_vix_correlation.target}: "
+        f"{sensex_vix_correlation.coefficient:.6f}"
     )
 
     print("\nDirectional Analysis")
     print("-" * 60)
-    print(f"{nifty_direction_result.feature} -> {nifty_direction_result.target}"
-        f"\nAccuracy           : {nifty_direction_result.accuracy:.6f}"
-        f"\nMatching directions: {nifty_direction_result.matching_directions}"
-        f"\nTotal observations : {nifty_direction_result.total_observations}"
-    )
 
-    print(f"{sensex_direction_result.feature} -> {sensex_direction_result.target}"
-          f"\nAccuracy           : {sensex_direction_result.accuracy:.6f}"
-          f"\nMatching directions: {sensex_direction_result.matching_directions}"
-          f"\nTotal observations : {sensex_direction_result.total_observations}"
+    print(f"{nifty_gift_direction_result.feature} -> {nifty_gift_direction_result.target}"
+        f"\nAccuracy           : {nifty_gift_direction_result.accuracy:.6f}"
+        f"\nMatching directions: {nifty_gift_direction_result.matching_directions}"
+        f"\nTotal observations : {nifty_gift_direction_result.total_observations}"
+    )
+    print("\n")
+    print(f"{sensex_gift_direction_result.feature} -> {sensex_gift_direction_result.target}"
+          f"\nAccuracy           : {sensex_gift_direction_result.accuracy:.6f}"
+          f"\nMatching directions: {sensex_gift_direction_result.matching_directions}"
+          f"\nTotal observations : {sensex_gift_direction_result.total_observations}"
+          )
+    print("\n")
+    print(f"{nifty_vix_direction_result.feature} -> {nifty_vix_direction_result.target}"
+          f"\nAccuracy           : {nifty_vix_direction_result.accuracy:.6f}"
+          f"\nMatching directions: {nifty_vix_direction_result.matching_directions}"
+          f"\nTotal observations : {nifty_vix_direction_result.total_observations}"
+          )
+    print("\n")
+    print(f"{sensex_vix_direction_result.feature} -> {sensex_vix_direction_result.target}"
+          f"\nAccuracy           : {sensex_vix_direction_result.accuracy:.6f}"
+          f"\nMatching directions: {sensex_vix_direction_result.matching_directions}"
+          f"\nTotal observations : {sensex_vix_direction_result.total_observations}"
           )
 
     print("\nBucket Analysis (Gift Return -> Nifty Gap)")
     print("-"*60)
 
-    for result in nifty_bucket_result:
+    for result in nifty_gift_bucket_result:
         print(
             f"{result.bucket_name:<20}"
             f" Observations: "
@@ -121,7 +173,31 @@ def run_correlation_analysis():
     print("\nBucket Analysis (Gift Return -> Sensex Gap)")
     print("-" * 60)
 
-    for result in sensex_bucket_result:
+    for result in sensex_gift_bucket_result:
+        print(
+            f"{result.bucket_name:<20}"
+            f" Observations: "
+            f"{result.observations:<5}"
+            f" Accuracy: "
+            f"{result.accuracy:.2%}"
+        )
+
+    print("\nBucket Analysis (VIX Return -> Nifty Gap)")
+    print("-" * 60)
+
+    for result in nifty_vix_bucket_result:
+        print(
+            f"{result.bucket_name:<20}"
+            f" Observations: "
+            f"{result.observations:<5}"
+            f" Accuracy: "
+            f"{result.accuracy:.2%}"
+        )
+
+    print("\nBucket Analysis (VIX Return -> Sensex Gap)")
+    print("-" * 60)
+
+    for result in sensex_vix_bucket_result:
         print(
             f"{result.bucket_name:<20}"
             f" Observations: "
@@ -133,14 +209,31 @@ def run_correlation_analysis():
     print("\nLag Analysis")
     print("-" * 60)
 
-    for result in nifty_lag_results:
+    for result in nifty_gift_lag_result:
         print(
             f"{result.feature:<20}"
             f" -> "
             f"{result.target:<15}"
             f": {result.coefficient:.6f}"
         )
-    for result in sensex_lag_results:
+    print("\n")
+    for result in sensex_gift_lag_result:
+        print(
+            f"{result.feature:<20}"
+            f" -> "
+            f"{result.target:<15}"
+            f": {result.coefficient:.6f}"
+        )
+    print("\n")
+    for result in sensex_vix_lag_result:
+        print(
+            f"{result.feature:<20}"
+            f" -> "
+            f"{result.target:<15}"
+            f": {result.coefficient:.6f}"
+        )
+    print("\n")
+    for result in sensex_vix_lag_result:
         print(
             f"{result.feature:<20}"
             f" -> "
@@ -156,11 +249,11 @@ def run_correlation_analysis():
     chart_builder.build_scatter_plot(
         dataset=feature_dataset,
         target="sensex_gap",
-            output_path=Path("charts/sensex_scatter.png")
+        output_path=Path("charts/sensex_scatter.png")
     )
 
     chart_builder.build_bucket_accuracy_chart(
-        results=nifty_bucket_result,
+        results=nifty_gift_bucket_result,
         title=(
             "Gift Return vs "
             "Nifty Gap Accuracy"
@@ -171,7 +264,7 @@ def run_correlation_analysis():
     )
 
     chart_builder.build_bucket_accuracy_chart(
-        results=sensex_bucket_result,
+        results=sensex_gift_bucket_result,
         title=(
             "Gift Return vs "
             "Sensex Gap Accuracy"
@@ -182,50 +275,108 @@ def run_correlation_analysis():
     )
 
     chart_builder.build_bucket_observation_chart(
-        results=nifty_bucket_result,
+        results=nifty_gift_bucket_result,
         title="Gift Return vs Nifty gap observations",
         output_path=Path("charts/nifty_bucket_counts.png")
     )
 
     chart_builder.build_bucket_observation_chart(
-        results=sensex_bucket_result,
+        results=sensex_gift_bucket_result,
         title="Gift Return vs Sensex gap observations",
         output_path=Path("charts/sensex_bucket_counts.png")
     )
 
     chart_builder.build_lag_analysis_chart(
-        results=nifty_lag_results,
+        results=nifty_gift_lag_result,
         title="",
-        output_path=Path("charts/nifty_lag_analysis.png")
+        output_path=Path("charts/nifty_gift_lag_analysis.png")
     )
 
     chart_builder.build_lag_analysis_chart(
-        results=sensex_lag_results,
+        results=sensex_gift_lag_result,
         title="",
-        output_path=Path("charts/sensex_lag_analysis.png")
+        output_path=Path("charts/sensex_gift_lag_analysis.png")
+    )
+
+    chart_builder.build_lag_analysis_chart(
+        results=nifty_vix_lag_result,
+        title="",
+        output_path=Path("charts/nifty_vix_lag_analysis.png")
+    )
+
+    chart_builder.build_lag_analysis_chart(
+        results=sensex_vix_lag_result,
+        title="",
+        output_path=Path("charts/sensex_vix_lag_analysis.png")
     )
 
     chart_builder.build_correlation_summary_chart(
-        nifty_correlation=nifty_result.coefficient,
-        sensex_correlation=sensex_result.coefficient,
-        output_path=Path("charts/correlation_summary.png")
+        nifty_correlation=nifty_gift_correlation.coefficient,
+        sensex_correlation=sensex_gift_correlation.coefficient,
+        output_path=Path("charts/gift_correlation_summary.png"),
+        feature="gift"
+    )
+
+    chart_builder.build_correlation_summary_chart(
+        nifty_correlation=nifty_vix_correlation.coefficient,
+        sensex_correlation=sensex_vix_correlation.coefficient,
+        output_path=Path("charts/vix_correlation_summary.png"),
+        feature="vix"
+    )
+
+    gift_factor = FactorSummary(
+        factor_name="Gift Return",
+
+        nifty_correlation=nifty_gift_correlation,
+        sensex_correlation=sensex_gift_correlation,
+
+        nifty_directional=nifty_gift_direction_result,
+        sensex_directional=sensex_gift_direction_result,
+
+        nifty_buckets=nifty_gift_bucket_result,
+        sensex_buckets=sensex_gift_bucket_result,
+
+        nifty_lags=nifty_gift_lag_result,
+        sensex_lags=sensex_gift_lag_result,
+    )
+
+    vix_factor = FactorSummary(
+        factor_name="VIX Return",
+
+        nifty_correlation=nifty_vix_correlation,
+        sensex_correlation=sensex_vix_correlation,
+
+        nifty_directional=nifty_vix_direction_result,
+        sensex_directional=sensex_vix_direction_result,
+
+        nifty_buckets=nifty_vix_bucket_result,
+        sensex_buckets=sensex_vix_bucket_result,
+
+        nifty_lags=nifty_vix_lag_result,
+        sensex_lags=sensex_vix_lag_result,
     )
 
     report = ResearchReport(
-        nifty_correlation=nifty_result,
-        sensex_correlation=sensex_result,
-
-        nifty_directional=nifty_direction_result,
-        sensex_directional=sensex_direction_result,
-
-        nifty_buckets=nifty_bucket_result,
-        sensex_buckets=sensex_bucket_result,
+        analysis_timestamp=datetime.now(),
+        observation_count=len(
+            feature_dataset.data
+        ),
+        start_date=feature_dataset.data[
+            "date"
+        ].min(),
+        end_date=feature_dataset.data[
+            "date"
+        ].max(),
+        factors=[
+            gift_factor,
+            vix_factor,
+        ],
     )
 
     MarkdownReportBuilder().build(
         report=report,
         output_file=Path(
-            "reports/gift_nifty_analysis.md"
+            "reports/research_report.md"
         ),
     )
 if __name__ == "__main__":

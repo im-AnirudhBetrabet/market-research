@@ -4,12 +4,13 @@ from src.domain.models            import MarketDataset
 from src.research.aligned_dataset import AlignedDataset
 
 class DatasetBuilder:
-    def build(self, gift_dataset: MarketDataset, nifty_dataset: MarketDataset, sensex_dataset: MarketDataset) -> AlignedDataset:
+    def build(self, gift_dataset: MarketDataset, nifty_dataset: MarketDataset, sensex_dataset: MarketDataset, vix_dataset: MarketDataset) -> AlignedDataset:
         gift_df   = self._prepare_dataset(dataset=gift_dataset  , prefix="gift"  )
         nifty_df  = self._prepare_dataset(dataset=nifty_dataset , prefix="nifty" )
         sensex_df = self._prepare_dataset(dataset=sensex_dataset, prefix="sensex")
+        vix_df    = self._prepare_dataset(dataset=vix_dataset   , prefix="vix"   )
 
-        common_dates = (set(gift_df['date']) & set(nifty_df['date']) & set(sensex_df['date']))
+        common_dates = (set(gift_df['date']) & set(nifty_df['date']) & set(sensex_df['date']) & set(vix_df['date']))
 
         if not common_dates:
             raise ValueError("No common trading dates found")
@@ -27,7 +28,12 @@ class DatasetBuilder:
             errors="ignore",
         )
 
-        aligned_df = gift_df.merge(nifty_df, on="date", how="inner").merge(sensex_df, on="date", how="inner").sort_values("date").reset_index(drop=True)
+        vix_df = self._filter_dates(vix_df, common_dates).drop(
+            columns=["index"],
+            errors="ignore"
+        )
+
+        aligned_df = gift_df.merge(nifty_df, on="date", how="inner").merge(sensex_df, on="date", how="inner").merge(vix_df, on="date", how="inner").sort_values("date").reset_index(drop=True)
 
         return AlignedDataset(
             data=aligned_df

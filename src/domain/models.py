@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
-from datetime    import datetime
+from datetime    import datetime, date
 import pandas as pd
+
+from src.domain.enums import RelationshipTypes
 
 @dataclass(frozen=True)
 class MarketBar:
@@ -46,7 +48,7 @@ class DirectionalAnalysisResult:
 
     total_observations : int
     matching_directions: int
-
+    relationship       : RelationshipTypes
     accuracy: float
 
 @dataclass(slots=True, frozen=True)
@@ -59,9 +61,16 @@ class BucketAnalysisResult:
     matching_directions: int
     accuracy           : float
 
+@dataclass(slots=True, frozen=True)
+class LagAnalysisResult:
+    feature    : str
+    target     : str
+    coefficient: float
 
 @dataclass(slots=True, frozen=True)
-class ResearchReport:
+class FactorSummary:
+    factor_name: str
+
     nifty_correlation : CorrelationResult
     sensex_correlation: CorrelationResult
 
@@ -71,8 +80,15 @@ class ResearchReport:
     nifty_buckets : list[BucketAnalysisResult]
     sensex_buckets: list[BucketAnalysisResult]
 
+    nifty_lags : list[LagAnalysisResult]
+    sensex_lags: list[LagAnalysisResult]
+
+
 @dataclass(slots=True, frozen=True)
-class LagAnalysisResult:
-    feature    : str
-    target     : str
-    coefficient: float
+class ResearchReport:
+    analysis_timestamp: datetime
+    observation_count : int
+    start_date        : date
+    end_date          : date
+
+    factors: list[FactorSummary]

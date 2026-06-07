@@ -30,6 +30,11 @@ def ingest_data():
 
     print_result("Sensex", sensex_result)
 
+    vix_pipeline = MarketDataPipeline(loader=yahoo_loader, validator=validator)
+    vix_df, vix_result = vix_pipeline.run("^INDIAVIX", "VIX")
+    vix_pipeline.save_data(vix_df.data, "india_vix")
+
+    print_result("VIX", vix_result)
 
 if __name__ == "__main__":
     ingest_data()

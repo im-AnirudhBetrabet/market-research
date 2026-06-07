@@ -50,14 +50,14 @@ class ChartBuilder:
         plt.savefig(output_path)
         plt.close()
 
-    def build_correlation_summary_chart(self, nifty_correlation: float, sensex_correlation: float, output_path: Path) -> None:
+    def build_correlation_summary_chart(self, nifty_correlation: float, sensex_correlation: float, output_path: Path, feature: str) -> None:
         labels = ["Nifty Gap", "Sensex Gap"]
         values = [nifty_correlation, sensex_correlation]
 
         plt.figure(figsize=(8, 6))
         plt.bar(labels, values)
         plt.ylabel("Correlation")
-        plt.title("Gift Return Correlation")
+        plt.title(f"{feature.capitalize()} Return Correlation")
         plt.tight_layout()
         plt.savefig(output_path)
         plt.close()
