@@ -373,6 +373,22 @@ def run_correlation_analysis():
         ],
     )
 
+    chart_builder.build_factor_ranking_chart(
+        factors=report.factors,
+        target="nifty",
+        output_path=Path(
+            "charts/factor_ranking_nifty.png"
+        ),
+    )
+
+    chart_builder.build_factor_ranking_chart(
+        factors=report.factors,
+        target="sensex",
+        output_path=Path(
+            "charts/factor_ranking_sensex.png"
+        ),
+    )
+
     MarkdownReportBuilder().build(
         report=report,
         output_file=Path(

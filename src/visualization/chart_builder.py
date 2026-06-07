@@ -1,6 +1,6 @@
 from pathlib import Path
 import matplotlib.pyplot as plt
-from src.domain.models import FeatureDataset, BucketAnalysisResult, LagAnalysisResult
+from src.domain.models import FeatureDataset, BucketAnalysisResult, LagAnalysisResult, FactorSummary
 
 class ChartBuilder:
     def build_scatter_plot(self, dataset: FeatureDataset, target: str, output_path: Path) -> None:
@@ -60,4 +60,36 @@ class ChartBuilder:
         plt.title(f"{feature.capitalize()} Return Correlation")
         plt.tight_layout()
         plt.savefig(output_path)
+        plt.close()
+
+    def build_factor_ranking_chart(self, factors: list[FactorSummary], target: str, output_path: Path) -> None:
+
+        if target == "nifty":
+            factors = sorted(factors, key=lambda factor: abs(factor.nifty_correlation.coefficient), reverse=True,)
+
+            labels = [ factor.factor_name for factor in factors ]
+
+            values = [ abs( factor.nifty_correlation.coefficient ) for factor in factors ]
+
+        else:
+            factors = sorted(factors, key=lambda factor: abs( factor.sensex_correlation.coefficient), reverse=True)
+
+            labels = [ factor.factor_name for factor in factors ]
+
+            values = [ abs( factor.sensex_correlation.coefficient ) for factor in factors ]
+
+        plt.figure(figsize=(10, 6))
+
+        plt.bar( labels, values, )
+
+        plt.ylabel(
+            "Absolute Correlation"
+        )
+
+        plt.title( f"Factor Ranking ({target.title()})" )
+
+        plt.tight_layout()
+
+        plt.savefig(output_path)
+
         plt.close()

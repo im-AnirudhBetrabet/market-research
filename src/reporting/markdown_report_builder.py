@@ -194,6 +194,29 @@ class MarkdownReportBuilder:
         lines.append("")
 
         lines.append(
+            "## Bucket Analysis (Sensex)"
+        )
+
+        lines.append("")
+
+        lines.append(
+            "| Bucket | Observations | Accuracy |"
+        )
+
+        lines.append(
+            "|--------|-------------:|----------:|"
+        )
+
+        for bucket in factor.sensex_buckets:
+            lines.append(
+                f"| {bucket.bucket_name} "
+                f"| {bucket.observations} "
+                f"| {bucket.accuracy:.2%} |"
+            )
+
+        lines.append("")
+
+        lines.append(
             "## Lag Analysis (Nifty)"
         )
 
@@ -209,6 +232,28 @@ class MarkdownReportBuilder:
 
         for lag in factor.nifty_lags:
 
+            lines.append(
+                f"| {lag.feature} "
+                f"| {lag.coefficient:.3f} |"
+            )
+
+        lines.append("")
+
+        lines.append(
+            "## Lag Analysis (Sensex)"
+        )
+
+        lines.append("")
+
+        lines.append(
+            "| Feature | Correlation |"
+        )
+
+        lines.append(
+            "|---------|------------:|"
+        )
+
+        for lag in factor.sensex_lags:
             lines.append(
                 f"| {lag.feature} "
                 f"| {lag.coefficient:.3f} |"

@@ -2,7 +2,7 @@
 
 ## Dataset Summary
 
-Analysis Timestamp: 2026-06-06 21:20:08.346135
+Analysis Timestamp: 2026-06-07 12:22:38.249841
 Observation Count: 2154
 Date Range: 2017-07-12 00:00:00 -> 2026-06-02 00:00:00
 
@@ -42,6 +42,18 @@ Sensex Accuracy: 61.23%
 | 2.00% - 3.00% |           59 |   76.27% |
 | 3.00%+        |           33 |   93.94% |
 
+## Bucket Analysis (Sensex)
+
+| Bucket        | Observations | Accuracy |
+|---------------|-------------:|---------:|
+| 0.00% - 0.20% |          384 |   52.60% |
+| 0.20% - 0.50% |          600 |   57.50% |
+| 0.50% - 1.00% |          664 |   64.76% |
+| 1.00% - 1.50% |          275 |   61.09% |
+| 1.50% - 2.00% |          139 |   71.94% |
+| 2.00% - 3.00% |           59 |   74.58% |
+| 3.00%+        |           33 |   90.91% |
+
 ## Lag Analysis (Nifty)
 
 | Feature           | Correlation |
@@ -50,6 +62,15 @@ Sensex Accuracy: 61.23%
 | gift_return_lag1  |       0.189 |
 | gift_return_lag2  |       0.070 |
 | gift_return_lead1 |       0.038 |
+
+## Lag Analysis (Sensex)
+
+| Feature           | Correlation |
+|-------------------|------------:|
+| gift_return       |       0.436 |
+| gift_return_lag1  |       0.182 |
+| gift_return_lag2  |       0.055 |
+| gift_return_lead1 |       0.028 |
 
 # VIX Return
 
@@ -75,6 +96,18 @@ Sensex Accuracy: 59.29%
 | 2.00% - 3.00% |          374 |   57.49% |
 | 3.00%+        |          947 |   68.32% |
 
+## Bucket Analysis (Sensex)
+
+| Bucket        | Observations | Accuracy |
+|---------------|-------------:|---------:|
+| 0.00% - 0.20% |           74 |   52.70% |
+| 0.20% - 0.50% |          152 |   48.03% |
+| 0.50% - 1.00% |          202 |   56.44% |
+| 1.00% - 1.50% |          215 |   52.09% |
+| 1.50% - 2.00% |          190 |   55.26% |
+| 2.00% - 3.00% |          374 |   56.95% |
+| 3.00%+        |          947 |   65.58% |
+
 ## Lag Analysis (Nifty)
 
 | Feature          | Correlation |
@@ -83,3 +116,12 @@ Sensex Accuracy: 59.29%
 | vix_return_lag1  |      -0.058 |
 | vix_return_lag2  |      -0.087 |
 | vix_return_lead1 |      -0.036 |
+
+## Lag Analysis (Sensex)
+
+| Feature          | Correlation |
+|------------------|------------:|
+| vix_return       |      -0.442 |
+| vix_return_lag1  |      -0.065 |
+| vix_return_lag2  |      -0.073 |
+| vix_return_lead1 |      -0.025 |
