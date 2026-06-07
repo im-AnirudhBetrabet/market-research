@@ -104,3 +104,9 @@ class ResearchReport:
 
     factors : list[FactorSummary]
     rankings: list[FactorRanking]
+
+    factor_correlation_matrix: pd.DataFrame
+
+@dataclass(slots=True, frozen=True)
+class FactorCorrelationResult:
+    matrix: pd.DataFrame

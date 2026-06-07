@@ -2,7 +2,7 @@
 
 ## Dataset Summary
 
-Analysis Timestamp: 2026-06-07 18:12:49.832689
+Analysis Timestamp: 2026-06-07 18:46:36.113321
 Observation Count: 1658
 Date Range: 2017-07-13 00:00:00 -> 2026-06-02 00:00:00
 
@@ -11,6 +11,14 @@ Date Range: 2017-07-13 00:00:00 -> 2026-06-02 00:00:00
 Strongest correlation factor: Gift Return (0.592)
 Best directional factor: S&P 500 Return (71.35%)
 Total factors analysed: 3
+
+## Factor Correlation Matrix
+
+| Factor       | gift_return | vix_return | sp500_return |
+|--------------|------------:|-----------:|-------------:|
+| gift_return  |       1.000 |     -0.466 |        0.252 |
+| vix_return   |      -0.466 |      1.000 |       -0.321 |
+| sp500_return |       0.252 |     -0.321 |        1.000 |
 
 ## Correlation Ranking (Nifty Gap)
 

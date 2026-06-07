@@ -10,7 +10,7 @@ class MarkdownReportBuilder:
         lines: list[str] = []
 
         self._build_header(report, lines)
-
+        self._build_factor_correlation_matrix(report, lines)
         self._build_factor_comparison(report, lines)
 
         for factor in report.factors:
@@ -342,3 +342,32 @@ class MarkdownReportBuilder:
             "- Results support further "
             "multi-factor research."
         )
+
+    def _build_factor_correlation_matrix(self, report: ResearchReport, lines: list[str]) -> None:
+
+        matrix = report.factor_correlation_matrix
+
+        lines.append("## Factor Correlation Matrix")
+
+        lines.append("")
+
+        header = "| Factor |"
+
+        for column in matrix.columns:
+            header += f" {column} |"
+
+        lines.append(header)
+
+        separator = "|--------|"
+
+        for _ in matrix.columns:
+            separator += "------:|"
+
+        lines.append(separator)
+
+        for index in matrix.index:
+            row = f"| {index} |"
+            for value in matrix.loc[index]:
+                row += f" {value:.3f} |"
+            lines.append(row)
+        lines.append("")

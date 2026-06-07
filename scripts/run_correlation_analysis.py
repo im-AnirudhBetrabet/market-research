@@ -4,6 +4,7 @@ from pathlib import Path
 from src.analytics.directional_analysis_engine import DirectionalAnalysisEngine
 from src.analytics.correlation_engine          import CorrelationEngine
 from src.analytics.lag_analysis_engine         import LagAnalysisEngine
+from src.analytics.factor_correlation_engine import FactorCorrelationResult, FactorCorrelationEngine
 from src.features.feature_builder              import FeatureBuilder
 from src.ingestion.csv_market_loader           import CsvMarketLoader
 from src.ingestion.gift_nifty_loader           import GiftNiftyLoader
@@ -146,7 +147,18 @@ def run_correlation_analysis():
     ]
     ## ====== Lag analysis ends ======
 
+    ## ====== Factor correlation analysis starts ======
+    factor_correlation_engine = FactorCorrelationEngine()
+    factor_correlation        = factor_correlation_engine.calculate(dataset=feature_dataset, features=["gift_return", "vix_return", 'sp500_return'])
+    ## ====== Factor correlation analysis ends ======
+
     ## ====== Results display starts ======
+    print("\n")
+    print("Factor Correlation Matrix")
+    print("-" * 60)
+
+    print(factor_correlation.matrix)
+
     print("\nCorrelation Analysis")
     print("-" * 60)
     print(
@@ -519,6 +531,15 @@ def run_correlation_analysis():
         feature="vix"
     )
 
+    chart_builder.build_factor_correlation_heatmap(
+        correlation_matrix=
+        factor_correlation.matrix,
+
+        output_path=Path(
+            "charts/factor_correlation_heatmap.png"
+        ),
+    )
+
     gift_factor = FactorSummary(
         factor_name="Gift Return",
 
@@ -588,7 +609,8 @@ def run_correlation_analysis():
             vix_factor,
             sp_factor
         ],
-        rankings=factor_rankings
+        rankings=factor_rankings,
+        factor_correlation_matrix=factor_correlation.matrix
     )
 
     chart_builder.build_factor_ranking_chart(

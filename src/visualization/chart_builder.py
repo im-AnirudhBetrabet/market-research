@@ -93,3 +93,23 @@ class ChartBuilder:
         plt.savefig(output_path)
 
         plt.close()
+
+    def build_factor_correlation_heatmap(self, correlation_matrix, output_path: Path) -> None:
+
+        plt.figure(figsize=(8, 6))
+
+        plt.imshow(correlation_matrix,aspect="auto")
+
+        plt.colorbar()
+
+        plt.xticks(range(len(correlation_matrix.columns)), correlation_matrix.columns, rotation=45)
+
+        plt.yticks(range(len(correlation_matrix.index)), correlation_matrix.index)
+
+        plt.title("Factor Correlation Matrix")
+
+        plt.tight_layout()
+
+        plt.savefig(output_path)
+
+        plt.close()
