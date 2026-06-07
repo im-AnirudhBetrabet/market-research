@@ -85,10 +85,22 @@ class FactorSummary:
 
 
 @dataclass(slots=True, frozen=True)
+class FactorRanking:
+
+    factor_name: str
+
+    nifty_correlation : float
+    sensex_correlation: float
+
+    nifty_accuracy : float
+    sensex_accuracy: float
+
+@dataclass(slots=True, frozen=True)
 class ResearchReport:
     analysis_timestamp: datetime
     observation_count : int
     start_date        : date
     end_date          : date
 
-    factors: list[FactorSummary]
+    factors : list[FactorSummary]
+    rankings: list[FactorRanking]

@@ -19,22 +19,27 @@ def ingest_data():
     print_result("Gift Nifty",gift_result)
 
     yahoo_loader           = YahooFinanceLoader(date(2015, 1, 1), date.today())
+
     nifty_pipeline         = MarketDataPipeline(loader=yahoo_loader, validator=validator)
     nifty_df, nifty_result = nifty_pipeline.run("^NSEI", "Nifty")
     nifty_pipeline.save_data(nifty_df.data, "nifty")
+    print_result("Nifty", nifty_result)
 
     sensex_pipeline          = MarketDataPipeline(loader=yahoo_loader, validator=validator)
     sensex_df, sensex_result = nifty_pipeline.run("^BSESN", "Sensex")
     sensex_pipeline.save_data(sensex_df.data, "sensex")
-    print_result("Nifty", nifty_result)
-
     print_result("Sensex", sensex_result)
 
     vix_pipeline = MarketDataPipeline(loader=yahoo_loader, validator=validator)
     vix_df, vix_result = vix_pipeline.run("^INDIAVIX", "VIX")
     vix_pipeline.save_data(vix_df.data, "india_vix")
-
     print_result("VIX", vix_result)
+
+    sp500_pipeline         = MarketDataPipeline(loader=yahoo_loader, validator=validator)
+    sp500_df, sp500_result = sp500_pipeline.run("^GSPC", 'sp500')
+    sp500_pipeline.save_data(sp500_df.data, "sp500")
+    print_result("S&P500", sp500_result)
+
 
 if __name__ == "__main__":
     ingest_data()

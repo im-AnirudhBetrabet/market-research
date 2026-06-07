@@ -11,10 +11,16 @@ class FeatureBuilder:
         df['gift_return_lag1']  = df['gift_return'].shift(1)
         df['gift_return_lag2']  = df['gift_return'].shift(2)
         df['gift_return_lead1'] = df['gift_return'].shift(-1)
+
         df['vix_return']        = df['vix_close'].pct_change()
         df['vix_return_lag1']   = df['vix_return'].shift(1)
         df['vix_return_lag2']   = df['vix_return'].shift(2)
         df['vix_return_lead1']  = df['vix_return'].shift(-1)
+
+        df['sp500_return']      = df['sp500_close'].pct_change()
+        df['sp500_return_lag1'] = df['sp500_return'].shift(1)
+        df['sp500_return_lag2'] = df['sp500_return'].shift(2)
+        df['sp500_return_lead1']= df['sp500_return'].shift(-1)
 
         # Target
         df["nifty_previous_close"] = df["nifty_close"].shift(1)
@@ -26,8 +32,9 @@ class FeatureBuilder:
 
         feature_df = df[[
             'date',
-            'gift_return', 'gift_return_lag1', 'gift_return_lag2', 'gift_return_lead1',
-            'vix_return' , 'vix_return_lag1' , 'vix_return_lag2' , 'vix_return_lead1',
+            'gift_return' , 'gift_return_lag1' , 'gift_return_lag2' , 'gift_return_lead1' ,
+            'vix_return'  , 'vix_return_lag1'  , 'vix_return_lag2'  , 'vix_return_lead1'  ,
+            'sp500_return', 'sp500_return_lag1', 'sp500_return_lag2', 'sp500_return_lead1',
             'nifty_gap',
             'sensex_gap'
         ]]
